@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:todo_app/features/todo/data/supabase_todo_repo.dart';
-import 'package:todo_app/features/todo/presentation/cubit/todo_cubit.dart';
-import 'package:todo_app/utils/api/credential.dart';
-
+import '/features/auth/data/supabase_auth_repo.dart';
+import '/features/auth/presentation/cubit/auth_cubit.dart';
+import '/features/auth/presentation/cubit/auth_states.dart';
 import '/features/todo/presentation/pages/todo_page.dart';
+import '/features/auth/presentation/pages/auth_screen.dart';
+import '/features/todo/data/supabase_todo_repo.dart';
+import '/features/todo/presentation/cubit/todo_cubit.dart';
+import '/utils/api/credential.dart';
 import '/utils/theme/elevated_button.dart';
 import '/utils/theme/input_decoration_theme.dart';
 
@@ -24,13 +27,19 @@ void main() async {
 class MyApp extends StatelessWidget {
   MyApp({super.key});
   final supabaseTodoRepo = SupabaseTodoRepo();
+  final supabaseAuthRepo = SupabaseAuthRepo();
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider<TodoCubit>(
-          create: (context) => TodoCubit(todoRepo: supabaseTodoRepo),
+          create: (context) {
+            return TodoCubit(todoRepo: supabaseTodoRepo);
+          },
+        ),
+        BlocProvider<AuthCubit>(
+          create: (context) => AuthCubit(authRepo: supabaseAuthRepo),
         ),
       ],
       child: MaterialApp(
@@ -42,7 +51,22 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         debugShowCheckedModeBanner: false,
-        home: TodoPage(),
+        home: BlocConsumer<AuthCubit, AuthStates>(
+          builder: (context, authState) {
+            final authcubit = context.read<AuthCubit>();
+            authcubit.checkAuth();
+
+            if (authState is UnAuthenticated) {
+              return AuthScreen();
+            }
+            if (authState is Authenticated) {
+              return TodoPage();
+            } else {
+              return Scaffold(body: Center(child: CircularProgressIndicator()));
+            }
+          },
+          listener: (context, state) {},
+        ),
       ),
     );
   }

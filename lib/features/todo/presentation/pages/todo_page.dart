@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:todo_app/features/auth/presentation/cubit/auth_cubit.dart';
 import '/features/todo/domain/entity/todo.dart';
 import '/features/todo/presentation/cubit/todo_state.dart';
 
@@ -90,7 +91,18 @@ class _TodoPageState extends State<TodoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('T O D O')),
+      appBar: AppBar(
+        title: Text('T O D O'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              final authCubit = context.read<AuthCubit>();
+              authCubit.logout();
+            },
+            icon: Icon(Icons.logout),
+          ),
+        ],
+      ),
       body: BlocConsumer<TodoCubit, TodoState>(
         builder: (context, state) {
           if (state is TodoLoading || state is TodoUploading) {
