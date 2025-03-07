@@ -17,6 +17,7 @@ class _TodoPageState extends State<TodoPage> {
   final titleController = TextEditingController();
 
   late final todoCubit = context.read<TodoCubit>();
+  late final authCubit = context.read<AuthCubit>();
 
   @override
   void initState() {
@@ -69,6 +70,7 @@ class _TodoPageState extends State<TodoPage> {
   void onSubmit(bool isEditing, Todo? todo) {
     if (isEditing) {
       final updatedTodo = Todo(
+        userId: authCubit.getCurrentUser!.id,
         id: todo!.id,
         title: titleController.text.trim(),
         isCompleted: todo.isCompleted,
@@ -76,7 +78,11 @@ class _TodoPageState extends State<TodoPage> {
       todoCubit.updateTodo(updatedTodo);
     } else {
       // create a todo
-      final todo = Todo(title: titleController.text, isCompleted: false);
+      final todo = Todo(
+        title: titleController.text,
+        isCompleted: false,
+        userId: authCubit.getCurrentUser!.id,
+      );
       todoCubit.createTodo(todo);
     }
   }
