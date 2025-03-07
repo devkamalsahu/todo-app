@@ -5,6 +5,7 @@ import '/features/todo/domain/repository/todo_repo.dart';
 
 class SupabaseTodoRepo implements TodoRepo {
   final _database = Supabase.instance.client;
+  final auth = Supabase.instance.client.auth;
 
   // Add Todo
   @override
@@ -33,6 +34,7 @@ class SupabaseTodoRepo implements TodoRepo {
       final todoData = await _database
           .from('todos')
           .select()
+          .eq('user_id', auth.currentUser!.id)
           .order('created_at', ascending: false);
 
       final todos = todoData.map((e) => Todo.fromJson(e)).toList();
